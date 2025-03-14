@@ -1,5 +1,13 @@
-#ifndef firstSO_H
-#define firstSO_H
+#ifndef FIRSTSO_H
+#define FIRSTSO_H
 
+class Philosopher {
+public:
+    int Id;
+    bool leftFork, rightFork;
 
-#endif 
+    Philosopher(int getId);
+    void state();
+};
+
+#endif // FIRSTSO_H

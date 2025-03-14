@@ -1,4 +1,3 @@
-
 program: main.o firstSO.o
 	g++ main.o firstSO.o -o program
 

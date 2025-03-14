@@ -1,10 +1,22 @@
 #include <iostream>
 #include <thread>
-#include "firstSO.h"
 
 using namespace std;
 
 
-int main() {
-    return 0;
+struct F
+{
+  void operator() () const
+  {
+    std::cout<<"Printing from  thread"<<std::endl;
+  }
+};
+
+int main()
+{
+  F f;
+  std::thread t(f);
+  t.join();
+
+  return 0;
 }
