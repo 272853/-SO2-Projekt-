@@ -3,7 +3,7 @@
 #include <mutex>
 #include <vector>
 #include <chrono>
-#include <algorithm>
+#include <atomic>
 
 using namespace std;
 
@@ -12,20 +12,36 @@ public:
     int id;
     mutex* leftFork;
     mutex* rightFork;
-    int lastEat;  
+    atomic<int>* lastEat;  // Race condition
 
-    Philosopher(int i, mutex* left, mutex* right) 
-        : id(i), leftFork(left), rightFork(right), lastEat(0) {}
+    Philosopher(int i, mutex* left, mutex* right, atomic<int>* lastEatTime)
+        : id(i), leftFork(left), rightFork(right), lastEat(lastEatTime) {}
 
-    void eat() {
-        // Reserving in one time 2 forks (deadlock, race condition)
-        scoped_lock lock(*leftFork, *rightFork);
+    //Main function checking if philosopher can eat and set state of hunger
+    void dine() {
+        while (true) {
+            // deadlock
+            if (leftFork->try_lock()) {
+                if (rightFork->try_lock()) {
+                    
+                    cout << "Philosopher " << id << " start : " << endl;
+                    this_thread::sleep_for(chrono::seconds(1)); 
+                    cout << "Philosopher  " << id << " end" << endl;
 
-        cout << "Philosopher " << id << " start : " << endl;
-        this_thread::sleep_for(chrono::seconds(1)); 
-        cout << "Philosopher  " << id << " end" << endl;
+                    // starvation
+                    *lastEat = 0;
 
-        lastEat = 0;  //starvation
+                    // free forks
+                    rightFork->unlock();
+                }
+                leftFork->unlock();
+            }
+
+            // more hungry
+            (*lastEat)++;
+
+            this_thread::sleep_for(chrono::milliseconds(1000));
+        }
     }
 };
 
@@ -34,42 +50,32 @@ void mainThreadFunction();
 
 int main(int argc, char* argv[]) {
     thread mainThread(mainThreadFunction);
-    
+
     int philosopherCount = stoi(argv[1]);
     if (philosopherCount > 8) {
         cout << "Argumet must less than 9" << endl;
         return 1;
     }
-    vector<mutex> forks(philosopherCount);  
+
+    vector<mutex> forks(philosopherCount);
+    vector<atomic<int>> lastEatTimes(philosopherCount);
     vector<Philosopher> philosophers;
     vector<thread> threads;
 
-    // Create Philosophers
+    //Creating Pilosophers and assigment forks
     for (int i = 0; i < philosopherCount; i++) {
-        philosophers.emplace_back(i, &forks[i], &forks[(i + 1) % philosopherCount]);
+        philosophers.emplace_back(i, &forks[i], &forks[(i + 1) % philosopherCount], &lastEatTimes[i]);
     }
 
-    while (true) {  
-        // Start eat from most hungries Philosopher
-        auto& hungriest = *min_element(philosophers.begin(), philosophers.end(),
-        [](const Philosopher& a, const Philosopher& b) {
-            return a.lastEat > b.lastEat;
-        });
+    //Creating Threads 
+    for (int i = 0; i < philosopherCount; i++) {
+        threads.emplace_back(&Philosopher::dine, &philosophers[i]);
+    }
 
-        threads.emplace_back(&Philosopher::eat, &hungriest);
+    for (auto& t : threads) {
+        t.join();
+    }
 
-        // Other Philosopher are mor Hungry
-        for (auto& phil : philosophers) {
-            if (&phil != &hungriest) phil.lastEat++;
-        }
-
-        this_thread::sleep_for(chrono::milliseconds(1000)); 
-        }
-
-        for (auto& t : threads) {
-            if (t.joinable()) t.join();
-        }
-    
     return 0;
 }
 

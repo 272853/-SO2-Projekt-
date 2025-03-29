@@ -59,6 +59,7 @@
   "files.associations": {
     "ostream": "cpp",
     "iostream": "cpp",
-    "mutex": "cpp"
+    "mutex": "cpp",
+    "atomic": "cpp"
   }
 }
