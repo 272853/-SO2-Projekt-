@@ -2,7 +2,7 @@
 Repo do Projektów z SO - inż. Damian Raczkowski
 
 Projekt1-Problem Jedzących Filozofów
-Realizacaj w języku c++ z bibloteką <thread>
+Realizacaj w języku c++ z bibloteką "<thread>"
 
 Program morzna uruchmić za pomoca plku "makefile" wpisując w cmd:
      make -> ./main 4 (4-liczba filozofów)
