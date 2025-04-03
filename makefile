@@ -14,7 +14,7 @@ $(TARGET): $(OBJ)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 run: $(TARGET)
-	./$(TARGET) 5
+	./$(TARGET) 7
 
 clean:
 	rm -f $(OBJ) $(TARGET)
