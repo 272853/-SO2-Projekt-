@@ -14,11 +14,17 @@ Rozwiązanie problemu "Jedzących Filozofów" polega na:
 1. zarządzanu zasobami
    
     1.1 należy przydzielać potrzebne zasoby do danego Filozofa
+   
     1.2 nie pozwolić aby dwóch Filozofów używało jednego zasobu jednocześnie
+   
     1.3 uniknąć zakleszczenia gdy dwóch Filozofów rząda dostępu do wspulnego zasobu
+   
     1.4 zwalnianiu nieużywanych zasobów
+   
 3. kontroleowaniu dostępności
+   
     2.1 należy równo przydzielać czas dostępności do zasobu dla każdego Filozofa
+   
     2.2 nie należy dopuścić tego by któryś z Filozofów miał ograniczony dostęp do zasobów
 
 Rozwiązanie w Programie:
