@@ -29,35 +29,54 @@ Rozwiązanie problemu "Jedzących Filozofów" polega na:
 
 Rozwiązanie w Programie:
 
+1. Rozwiązanie problemów współbieżności
 1.1 Przydzielanie potrzebnych zasobów do danego Filozofa
-    Każdy filozof dostaje dwa widelce (muteksy) – jeden po lewej stronie i jeden po prawej.
-    W konstruktorze Philosopher(int i, mutex* left, mutex* right, atomic<int>* lastEatTime) przypisuje się im odpowiednie muteksy.
-    Każdy filozof działa w osobnym wątku i próbuje zdobyć dwa widelce, aby móc jeść.
 
+    Każdy filozof w programie ma przypisane dwie widelce (mutexy). Są one przypisane w konstruktorze klasy Philosopher, gdzie dla filozofa o indeksie i:
+
+    leftFork to mutex forks[i]
+
+    rightFork to mutex forks[(i + 1) % philosopherCount]
+
+    Dzięki temu każdy filozof ma określone dwa widelce i próbuje je zdobyć przed rozpoczęciem jedzenia.
 1.2 Zapobieganie wyścigowi (race condition)
-    Potencjalny wyścig może wystąpić przy aktualizacji czasu ostatniego posiłku lastEat. Wykorzystanie atomic<int> minimalizuje to ryzyko, zapewniając, że operacja inkrementacji (*lastEat)++ i reset *lastEat = 0; są bezpieczne dla współbieżności.
+
+    Mutexy (mutex): Zapobiegają jednoczesnemu używaniu tego samego widelca przez dwóch filozofów.
+
+    Atomowe zmienne (atomic<int>): lastEat dla każdego filozofa oraz running zapewniają bezpieczne aktualizowanie wartości bez konieczności używania dodatkowych mutexów.
+
+    Mutex priorityMutex: Zapobiega jednoczesnemu sprawdzaniu priorytetów przez wielu filozofów, co mogłoby prowadzić do błędnych decyzji.
 
 1.3 Unikanie zakleszczenia (deadlock)
-     try_lock(), powoduje, że filozof nie będzie czekał w nieskończoność na prawy widelec – jeśli go nie dostanie, puści lewy i spróbuje ponownie później.
 
+    Priorytet głodnych filozofów: Przed próbą zdobycia widelców filozof sprawdza, czy jest najbardziej "głodny" (jego lastEat jest najniższe w porównaniu do innych).
+
+    try_lock() zamiast lock(): Zamiast blokować wątek do momentu uzyskania dostępu do obu widelców, try_lock() sprawdza, czy widelec jest dostępny. Jeśli nie jest, filozof odkłada zdobyty już widelec i próbuje później.
+
+    Mechanizm zwiększania lastEat: Jeśli filozof nie może jeść, jego licznik głodu (lastEat) zwiększa się, co oznacza, że jego priorytet do jedzenia rośnie.
 
 1.4 Zwalnianie nieużywanych zasobów
 
-    Po zakończeniu jedzenia filozof zwalnia prawy i lewy widelec za pomocą unlock(), co umożliwia innym filozofom skorzystanie z nich.
+    Widelec jest zwalniany natychmiast po skończeniu jedzenia: Po zakończeniu posiłku filozof resetuje swój lastEat i odblokowuje widelce.
+
+    Filozofowie nie blokują widelców, jeśli nie mogą ich zdobyć obu: Dzięki try_lock(), jeśli filozof nie może zdobyć obu widelców, nie zatrzymuje on zasobów, co pozwala innym filozofom z nich korzystać.
 
 2. Kontrola dostępności
 2.1 Równomierne przydzielanie czasu dostępu do zasobów
 
-    
+    Dzięki mechanizmowi lastEat filozofowie, którzy długo nie jedli, zyskują wyższy priorytet. Przed próbą zdobycia widelców sprawdzają, czy nie ma filozofa bardziej "głodnego", co prowadzi do bardziej sprawiedliwego przydzielania zasobów.
 
 2.2 Zapobieganie zagłodzeniu (starvation)
 
+    Mechanizm lastEat: Filozofowie, którzy długo nie jedli, stopniowo zwiększają swoją wartość lastEat. Przy każdej próbie zdobycia widelców filozofowie sprawdzają, czy ktoś inny jest bardziej głodny i czekają na swoją kolej.
+
+    Mutex priorityMutex: Zapewnia, że ocena priorytetów jest wykonywana w sposób spójny i zapobiega sytuacjom, w których jeden filozof byłby niesprawiedliwie pomijany.
     
 
 
 
 Działanie Programu:
 Stworzyłem odzielny niezależny wątek który jest w stanie stale wczytywać dane z klawiatóry i jeśli użytkownik wpiszę q lub Q 
-i zatwirdzi enter'em program się wyłącza. Pozwala to zakończyć działanie programu który działa w nieskończonośc.
+i zatwirdzi enter'em program się wyłącza. Pozwala to zakończyć działanie programu który domyślnie działa w nieskończonośc.
 
 Co 1s syswietlana jest informacja jakie wątki  zakińczyły pracę i jake zaczeły pracę tworząc sekwęcje zarządzania wspułdzielonymi zasobami w wilewątkowości.
