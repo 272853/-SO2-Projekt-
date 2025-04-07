@@ -41,12 +41,12 @@ public:
                 continue;
             }
 
-            // Picking Forks
+            // Picking Forks 
             if (leftFork->try_lock()) {
                 if (rightFork->try_lock()) {
                     cout << "Philosopher " << id << " starts eating" << endl;
                     this_thread::sleep_for(chrono::seconds(1));
-                    cout << "Philosopher " << id << " finished eating" << endl;
+                    cout << "Philosopher " << id << " finish eating" << endl;
 
                     *lastEat = 0;  // Reset Starvation
 

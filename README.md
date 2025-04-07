@@ -2,15 +2,26 @@
 Repo do Projektów z SO - inż. Damian Raczkowski
 
 Projekt1-Problem Jedzących Filozofów
-Realizacaj w języku c++ z bibloteką "<thread>"
+
+Realizaca w języku c++ z bibloteką ```<thread>```
 
 Program morzna uruchmić za pomoca plku "makefile" wpisując w cmd:
-     make -> ./main 4 (4-liczba filozofów)
-     lub
-     make run (wtedy odrazu zostanie uruchomiony program z argumętem wpisanym w miejscu * -> ./$(TARGET) * w "makefile")
+```
+     make
+```
+a następnie (dla np 4 filozofów)
 
+```
+    ./main 4
+```
+lub
 
-Rozwiązanie problemu "Jedzących Filozofów" polega na:
+```
+     make run 
+```
+(wtedy odrazu zostanie uruchomiony program z argumętem wpisanym w miejscu * -> ./$(TARGET) * w "makefile")
+
+# Rozwiązanie problemu "Jedzących Filozofów" polega na:
 1. zarządzanu zasobami
    
     1.1 należy przydzielać potrzebne zasoby do danego Filozofa
@@ -30,16 +41,18 @@ Rozwiązanie problemu "Jedzących Filozofów" polega na:
 Rozwiązanie w Programie:
 
 1. Rozwiązanie problemów współbieżności
-1.1 Przydzielanie potrzebnych zasobów do danego Filozofa
+
+    1.1 Przydzielanie potrzebnych zasobów do danego Filozofa
 
     Każdy filozof w programie ma przypisane dwie widelce (mutexy). Są one przypisane w konstruktorze klasy Philosopher, gdzie dla filozofa o indeksie i:
 
-    leftFork to mutex forks[i]
+    leftFork to mutex ```forks[i]```
 
-    rightFork to mutex forks[(i + 1) % philosopherCount]
+    rightFork to mutex ```forks[(i + 1) % philosopherCount]```
 
     Dzięki temu każdy filozof ma określone dwa widelce i próbuje je zdobyć przed rozpoczęciem jedzenia.
-1.2 Zapobieganie wyścigowi (race condition)
+
+    1.2 Zapobieganie wyścigowi (race condition)
 
     Mutexy (mutex): Zapobiegają jednoczesnemu używaniu tego samego widelca przez dwóch filozofów.
 
@@ -47,7 +60,7 @@ Rozwiązanie w Programie:
 
     Mutex priorityMutex: Zapobiega jednoczesnemu sprawdzaniu priorytetów przez wielu filozofów, co mogłoby prowadzić do błędnych decyzji.
 
-1.3 Unikanie zakleszczenia (deadlock)
+    1.3 Unikanie zakleszczenia (deadlock)
 
     Priorytet głodnych filozofów: Przed próbą zdobycia widelców filozof sprawdza, czy jest najbardziej "głodny" (jego lastEat jest najniższe w porównaniu do innych).
 
@@ -55,23 +68,27 @@ Rozwiązanie w Programie:
 
     Mechanizm zwiększania lastEat: Jeśli filozof nie może jeść, jego licznik głodu (lastEat) zwiększa się, co oznacza, że jego priorytet do jedzenia rośnie.
 
-1.4 Zwalnianie nieużywanych zasobów
+    1.4 Zwalnianie nieużywanych zasobów
 
     Widelec jest zwalniany natychmiast po skończeniu jedzenia: Po zakończeniu posiłku filozof resetuje swój lastEat i odblokowuje widelce.
 
     Filozofowie nie blokują widelców, jeśli nie mogą ich zdobyć obu: Dzięki try_lock(), jeśli filozof nie może zdobyć obu widelców, nie zatrzymuje on zasobów, co pozwala innym filozofom z nich korzystać.
 
 2. Kontrola dostępności
-2.1 Równomierne przydzielanie czasu dostępu do zasobów
+
+    2.1 Równomierne przydzielanie czasu dostępu do zasobów
 
     Dzięki mechanizmowi lastEat filozofowie, którzy długo nie jedli, zyskują wyższy priorytet. Przed próbą zdobycia widelców sprawdzają, czy nie ma filozofa bardziej "głodnego", co prowadzi do bardziej sprawiedliwego przydzielania zasobów.
 
-2.2 Zapobieganie zagłodzeniu (starvation)
+    2.2 Zapobieganie zagłodzeniu (starvation)
 
     Mechanizm lastEat: Filozofowie, którzy długo nie jedli, stopniowo zwiększają swoją wartość lastEat. Przy każdej próbie zdobycia widelców filozofowie sprawdzają, czy ktoś inny jest bardziej głodny i czekają na swoją kolej.
 
     Mutex priorityMutex: Zapewnia, że ocena priorytetów jest wykonywana w sposób spójny i zapobiega sytuacjom, w których jeden filozof byłby niesprawiedliwie pomijany.
     
+
+Filozofowie reprezentowani są przez kalsę Philosopher.
+Tworzone Filozofów i przypisywanie im widelców odbywa się w main()
 
 
 
