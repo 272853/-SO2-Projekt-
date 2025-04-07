@@ -38,7 +38,7 @@ lub
    
     2.2 nie należy dopuścić do tego by któryś z Filozofów nie miał dostępu do zasobów
 
-Rozwiązanie w Programie:
+# Rozwiązanie w Programie:
 
 1. Rozwiązanie problemów współbieżności
 
