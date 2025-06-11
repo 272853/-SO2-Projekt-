@@ -1,4 +1,4 @@
-# -SO2-Projekt-
+# SO2-Projekt-1
 Repo do Projektów z SO - inż. Damian Raczkowski
 
 Projekt1-Problem Jedzących Filozofów
