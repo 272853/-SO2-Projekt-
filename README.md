@@ -1,27 +1,41 @@
-# SO2-Projekt-1
+# SO2-Projekt-1-Problem jedzących Filozofów
 Repo do Projektów z SO - inż. Damian Raczkowski
 
-Projekt1-Problem Jedzących Filozofów
 
-Realizaca w języku c++ z bibloteką ```<thread>```
+Realizaca projektó w języku c++ z bibloteką ```<thread>```
+
+## Uruchamianie Projektów
 
 Program morzna uruchmić za pomoca plku "makefile" wpisując w cmd:
 ```
      make
 ```
-a następnie (dla np 4 filozofów)
+uruchomienie Projektu1 (dla np 4 filozofów)
 
 ```
     ./main 4
 ```
-lub
+
+uruchominie Projektu2 
 
 ```
-     make run 
+    ./main_proj2 
 ```
+lub odpowiednio
+
+```
+     make run1 
+```
+i
+```
+     make run2 
+```
+
 (wtedy odrazu zostanie uruchomiony program z argumętem wpisanym w miejscu * -> ./$(TARGET) * w "makefile")
 
-# Rozwiązanie problemu "Jedzących Filozofów" polega na:
+## Projekt1-Problem Jedzących Filozofów
+
+### Rozwiązanie problemu "Jedzących Filozofów" polega na:
 1. zarządzanu zasobami
    
     1.1 należy przydzielać potrzebne zasoby do danego Filozofa
@@ -38,7 +52,7 @@ lub
    
     2.2 nie należy dopuścić do tego by któryś z Filozofów nie miał dostępu do zasobów
 
-# Rozwiązanie w Programie:
+### Rozwiązanie w Programie:
 
 1. Rozwiązanie problemów współbieżności
 
@@ -97,3 +111,67 @@ Stworzyłem odzielny niezależny wątek który jest w stanie stale wczytywać da
 i zatwirdzi enter'em program się wyłącza. Pozwala to zakończyć działanie programu który domyślnie działa w nieskończonośc.
 
 Co 1s syswietlana jest informacja jakie wątki  zakińczyły pracę i jake zaczeły pracę tworząc sekwęcje zarządzania wspułdzielonymi zasobami w wilewątkowości.
+
+
+# Projekt2-Wielowątkowy serwer czatu
+
+## Opis projektu
+
+Aplikacja to symulacja dwuwindowego systemu czatu w środowisku Windows API. Dwa niezależne okna dzielą wspólną przestrzeń wiadomości (`sharedMessages`), przy czym tylko jedno z nich może w danym momencie aktywnie dodawać wiadomości do tej przestrzeni. Okna przełączają się automatycznie co 500 ms – wiadomości wpisane w nieaktywnym oknie są buforowane i dodawane do wspólnej przestrzeni dopiero po aktywacji tego okna.
+
+### Główne funkcjonalności:
+- Dwa okna czatu (chat 1 i chat 2).
+- Wprowadzanie wiadomości przez użytkownika (obsługa klawiszy, w tym Enter i Backspace).
+- Buforowanie wiadomości z nieaktywnego okna.
+- Automatyczne przełączanie aktywnego okna co 500 ms.
+- Przewijanie okna czatu (scrollbar).
+- Synchronizacja danych między wątkami.
+
+---
+
+## Opis problemu
+
+Głównym problemem było zapewnienie spójności danych w środowisku wielowątkowym przy jednoczesnym współdzieleniu stanu (lista wiadomości) pomiędzy dwoma niezależnymi oknami GUI. Wiadomości wprowadzone z aktywnego okna są dodawane bezpośrednio do wspólnego zasobu, natomiast z nieaktywnego – buforowane i przesyłane dopiero po ponownej aktywacji okna. Problem synchronizacji danych rozwiązano poprzez mutex (`std::mutex`), a aktywne okno reprezentowane jest za pomocą `std::atomic<HWND>`.
+
+---
+
+## Wątki
+
+### 1. **Główny wątek GUI**
+- Odpowiada za pętlę komunikatów Windows (`GetMessage`, `DispatchMessage`).
+- Obsługuje tworzenie okien, wejście klawiatury, rysowanie (`WM_PAINT`), przewijanie (`WM_VSCROLL`) oraz resize (`WM_SIZE`).
+
+### 2. **Wątek `toggleThread`**
+- Co 500 ms przełącza aktywne okno (`activeWindow`).
+- Odpowiada za synchronizację buforów wiadomości: przesyła z bufora okna nieaktywnego do wspólnej listy po aktywacji.
+- Używa `InvalidateRect()` do odświeżenia UI.
+
+---
+
+## Sekcje krytyczne i rozwiązania
+
+### Sekcja: `sharedMessages` — współdzielona lista wiadomości
+- Problem: jednoczesny dostęp do listy z dwóch wątków (UI i toggleThread).
+- Rozwiązanie: `std::mutex sharedMutex` zabezpiecza dostęp. Wszelkie operacje odczytu/zapisu na `sharedMessages` są objęte blokiem `std::lock_guard<std::mutex>`.
+
+### Sekcja: `pendingMessages[hwnd]` — bufor wiadomości nieaktywnego okna
+- Problem: może być modyfikowany przez `WM_CHAR` i odczytywany przez `FlushPendingMessages()`.
+- Rozwiązanie: dostęp tylko z jednego wątku (wątek główny), więc nie wymaga mutexa. Odczyt następuje tylko w momencie odświeżenia przez `WM_PAINT`, co zapewnia bezpieczeństwo.
+
+### Zmienna `activeWindow`
+- Problem: dostępna z dwóch wątków — głównego (np. `WM_CHAR`) i `toggleThread`.
+- Rozwiązanie: użycie `std::atomic<HWND>` zapewnia bezpieczny dostęp bez potrzeby mutexa.
+
+---
+
+## Dodatkowe informacje
+
+### Format wiadomości:
+- Obsługa znaków ASCII od 32 do 126.
+- Enter (`VK_RETURN`) — wysyłanie wiadomości.
+- Backspace (`VK_BACK`) — usuwanie znaku z bufora.
+
+### Przewijanie wiadomości:
+- Obsługa `WM_VSCROLL` i `WM_SIZE` pozwala na dynamiczne dostosowanie widocznych linii do rozmiaru okna.
+
+---
