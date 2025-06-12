@@ -52,6 +52,8 @@ i
    
     2.2 nie należy dopuścić do tego by któryś z Filozofów nie miał dostępu do zasobów
 
+---
+
 ### Rozwiązanie w Programie:
 
 1. Rozwiązanie problemów współbieżności
@@ -86,6 +88,8 @@ i
 
     Widelec jest zwalniany natychmiast po skończeniu jedzenia: Po zakończeniu posiłku filozof resetuje swój lastEat i odblokowuje widelce.
 
+
+
     Filozofowie nie blokują widelców, jeśli nie mogą ich zdobyć obu: Dzięki try_lock(), jeśli filozof nie może zdobyć obu widelców, nie zatrzymuje on zasobów, co pozwala innym filozofom z nich korzystać.
 
 2. Kontrola dostępności
@@ -99,18 +103,25 @@ i
     Mechanizm lastEat: Filozofowie, którzy długo nie jedli, stopniowo zwiększają swoją wartość lastEat. Przy każdej próbie zdobycia widelców filozofowie sprawdzają, czy ktoś inny jest bardziej głodny i czekają na swoją kolej.
 
     Mutex priorityMutex: Zapewnia, że ocena priorytetów jest wykonywana w sposób spójny i zapobiega sytuacjom, w których jeden filozof byłby niesprawiedliwie pomijany.
-    
+
+
+
 
 Filozofowie reprezentowani są przez kalsę Philosopher.
 Tworzone Filozofów i przypisywanie im widelców odbywa się w main()
 
+---
 
+### Działanie Programu:
 
-Działanie Programu:
 Stworzyłem odzielny niezależny wątek który jest w stanie stale wczytywać dane z klawiatóry i jeśli użytkownik wpiszę q lub Q 
 i zatwirdzi enter'em program się wyłącza. Pozwala to zakończyć działanie programu który domyślnie działa w nieskończonośc.
 
+
+
 Co 1s syswietlana jest informacja jakie wątki  zakińczyły pracę i jake zaczeły pracę tworząc sekwęcje zarządzania wspułdzielonymi zasobami w wilewątkowości.
+
+
 
 
 # Projekt2-Wielowątkowy serwer czatu
